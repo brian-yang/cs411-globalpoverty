@@ -1,3 +1,5 @@
+server/credentials.js
+
 # Logs
 logs
 *.log
