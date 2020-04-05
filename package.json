@@ -1,0 +1,28 @@
+{
+    "name": "cs411-globalpoverty",
+    "version": "1.0.0",
+    "description": ":) Under construction",
+    "main": "index.js",
+    "scripts": {
+        "dev": "node server/server.js",
+        "build": "next build",
+        "start": "next start"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/brian-yang/cs411-globalpoverty.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/brian-yang/cs411-globalpoverty/issues"
+    },
+    "homepage": "https://github.com/brian-yang/cs411-globalpoverty#readme",
+    "dependencies": {
+        "express": "^4.17.1",
+        "next": "^9.3.4",
+        "react": "^16.13.1",
+        "react-dom": "^16.13.1"
+    }
+}
