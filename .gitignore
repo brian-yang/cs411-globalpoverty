@@ -1,4 +1,4 @@
-server/credentials.js
+server/secrets.js
 
 # Logs
 logs
