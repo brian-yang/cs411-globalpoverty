@@ -6,3 +6,4 @@
 
 ## Run
 1. Run `npm run dev`.
+2. Go to `localhost:3000` or `127.0.0.1:3000` to view the site.
