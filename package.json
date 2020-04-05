@@ -22,9 +22,12 @@
     "dependencies": {
         "apoc": "^2.1.6",
         "express": "^4.17.1",
+        "extend": "^3.0.2",
         "mysql": "^2.18.1",
         "next": "^9.3.4",
         "react": "^16.13.1",
-        "react-dom": "^16.13.1"
+        "react-dom": "^16.13.1",
+        "safe-eval": "^0.4.1",
+        "superagent": "^5.2.2"
     }
 }
