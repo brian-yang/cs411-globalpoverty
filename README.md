@@ -6,6 +6,7 @@
 3. Install MySQL and import the .sql dump file into MySQL.
 4. Rename `.secrets.js` into `secrets.js`.
 5. Put your MySQL credentials into `secrets.js`. You need to have a password for your user.
+6. See `Other things` below if you're having trouble with setting up MySQL.
 
 ## Run
 1. Run `npm run dev`.

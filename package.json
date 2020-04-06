@@ -21,6 +21,7 @@
     "homepage": "https://github.com/brian-yang/cs411-globalpoverty#readme",
     "dependencies": {
         "apoc": "^2.1.6",
+        "axios": "^0.19.2",
         "express": "^4.17.1",
         "extend": "^3.0.2",
         "mysql": "^2.18.1",
