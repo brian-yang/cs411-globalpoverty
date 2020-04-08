@@ -22,11 +22,11 @@ class App extends React.Component {
             })
                 .then((response) => {
                     const { data } = response.data;
+                    console.log(data);
                     this.setState({
                         testData: data,
                         loading: false,
                     });
-                    console.log("Got data");
                 })
                 .catch((error) => {
                     this.setState({ loading: false });
@@ -39,7 +39,9 @@ class App extends React.Component {
         return (
             <div>
                 <Layout>
-                    <h1>Global Poverty</h1>
+                    <h1>Global Poverty Visualizer</h1>
+                    <h2>CS 411 - Team 71</h2>
+                    <h3>Created by: Danqi Luo, Sean Coughlin, Haorong Sun, Brian Yang</h3>
                 </Layout>
                 {this.state.testData}
             </div>
