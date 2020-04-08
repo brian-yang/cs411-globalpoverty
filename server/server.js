@@ -2,6 +2,7 @@ const express = require('express');
 const next = require('next');
 const mysql = require('mysql');
 const secrets = require("./secrets.js");
+const api = require("./api/routes.js");
 
 const connection = mysql.createConnection(secrets.getSqlCredentials());
 connection.connect();
@@ -20,9 +21,14 @@ connection.query('SELECT 1 + 1 AS solution', function (err, rows, fields) {
     console.log('The solution is:', rows[0].solution);
 })
 
+
+
+
 app.prepare()
     .then(() => {
         const server = express();
+
+        server.use("/api", api);
 
         server.get('*', (req, res) => {
             return handle(req, res);
