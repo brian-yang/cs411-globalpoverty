@@ -22,11 +22,11 @@ class App extends React.Component {
             })
                 .then((response) => {
                     const { data } = response.data;
+                    console.log(data);
                     this.setState({
                         testData: data,
                         loading: false,
                     });
-                    console.log("Got data");
                 })
                 .catch((error) => {
                     this.setState({ loading: false });
