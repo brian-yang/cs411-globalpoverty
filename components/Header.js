@@ -27,8 +27,12 @@ export default function ButtonAppBar() {
                     <Link href="/">
                         <Button color="inherit">Home</Button>
                     </Link>
-                    <Button color="inherit">Page 1</Button>
-                    <Button color="inherit">Page 2</Button>
+                    <Link href="/viewData">
+                        <Button color="inherit">Credits</Button>
+                    </Link>
+                    <Link href="/insertDelete">
+                        <Button color="inherit">Page 2</Button>
+                    </Link>
                 </Toolbar>
             </AppBar>
         </div>
