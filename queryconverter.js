@@ -48,13 +48,13 @@ var query = ConvertQuery("search;*;extremePoverty;percentExtremePoverty > 70");
 
 
 
-// connection.query(query, function (err, result, fields) {
-//     // if any error while executing above query, throw error
-//     if (err) throw err;
-//     // if there is no error, you have the result
-//     console.log(result);
-//     console.log("Number of rows affected : " + result.affectedRows);
-//     console.log("Number of records affected with warning : " + result.warningCount);
-//     console.log("Message from MySQL Server : " + result.message);
-// });
+connection.query(query, function (err, result, fields) {
+    // if any error while executing above query, throw error
+    if (err) throw err;
+    // if there is no error, you have the result
+    console.log(result);
+    console.log("Number of rows affected : " + result.affectedRows);
+    console.log("Number of records affected with warning : " + result.warningCount);
+    console.log("Message from MySQL Server : " + result.message);
+});
 
