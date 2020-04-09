@@ -17,7 +17,7 @@
 Run `mysqldump -u <user> -p <database_name> > global_poverty.sql`. `<user>` should be whatever user you use to get into the mysql terminal, which could be `root` or another user. `<database_name>` is the name of the database you want to export.
 
 ### Import the database into MySQL from a .sql file
-Run `mysqldump -u <user> -p <database_name> < global_poverty.sql`. Notice the arrow is reversed.
+Run `mysql -u <user> -p <database_name> < global_poverty.sql`. Notice the arrow is reversed and it's `mysql` not `mysqldump`.
 
 ## Other things
 1. You might see a weird error that says `Client does not support authentication protocol requested by server`. This might be because you are running MySQL 8.0. Do `ALTER USER '<username>'@'localhost' IDENTIFIED WITH mysql_native_password BY '<password>'`, replacing `<username>` and `<password>` with your username and password for MySQL.

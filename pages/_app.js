@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
+import styles from '../styles/index.css';
 
 export default function MyApp(props) {
     const { Component, pageProps } = props;
@@ -16,10 +17,10 @@ export default function MyApp(props) {
     return (
         <React.Fragment>
             <Head>
-                <title>My page</title>
+                <title>Global Poverty</title>
                 <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
             </Head>
-            <Component {...pageProps} />
+            <Component {...pageProps} ml={2} />
         </React.Fragment>
     );
 }

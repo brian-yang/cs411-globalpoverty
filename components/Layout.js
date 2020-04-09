@@ -1,9 +1,12 @@
 import Header from './Header';
+import Box from '@material-ui/core/Box';
 
-const Layout = props => (
+const Layout = (props) => (
     <div>
         <Header />
-        {props.children}
+        <Box ml={2}>
+            {props.children}
+        </Box>
     </div>
 );
 

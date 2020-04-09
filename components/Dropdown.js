@@ -19,9 +19,11 @@ const useStyles = makeStyles((theme) => createStyles({
 }));
 
 const Dropdown = (props) => {
-    const { label, list } = props;
     const classes = useStyles();
     const [formValue, setFormValue] = React.useState('');
+
+    const label = props.label;
+    const list = props.list;
 
     const handleChange = (event) => {
         setFormValue(event.target.value);
