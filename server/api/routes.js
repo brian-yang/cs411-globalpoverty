@@ -9,9 +9,9 @@ router.post('/find', (req, res) => {
     // Parse request here
     var country = "United States";
     var minYear = 1980;
-
+    var maxYear = 2000;
     res.status(200);
-    // Find row database here
+    // Find rows here using the range [minYear, maxYear]
 });
 
 router.post('/insert', (req, res) => {
