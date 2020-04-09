@@ -4,7 +4,7 @@
     "description": ":) Under construction",
     "main": "index.js",
     "scripts": {
-        "dev": "nodemon server/server.js",
+        "dev": "node server/server.js",
         "build": "next build",
         "start": "next start"
     },
@@ -20,6 +20,7 @@
     },
     "homepage": "https://github.com/brian-yang/cs411-globalpoverty#readme",
     "dependencies": {
+        "@material-ui/core": "^4.9.9",
         "apoc": "^2.1.6",
         "axios": "^0.19.2",
         "express": "^4.17.1",
@@ -31,6 +32,10 @@
         "react": "^16.13.1",
         "react-dom": "^16.13.1",
         "safe-eval": "^0.4.1",
+        "styled-components": "^4.4.0",
         "superagent": "^5.2.2"
+    },
+    "devDependencies": {
+        "babel-plugin-styled-components": "^1.10.7"
     }
 }
