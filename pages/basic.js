@@ -61,8 +61,10 @@ class Basic extends React.Component {
         this.state = {
             country: "United States",
             loading: true,
+            typeLabel: "Country",
         }
         this.fetchData = this.fetchData.bind(this);
+        this.handleDropdownChange = this.handleDropdownChange.bind(this);
     }
 
     componentDidMount() {
@@ -91,21 +93,34 @@ class Basic extends React.Component {
         });
     }
 
+    handleDropdownChange(label, value) {
+        console.log(label, value);
+        if (label === "Type") {
+            this.setState({
+                typeLabel: value,
+            });
+        }
+    }
+
     render() {
         return (
             <div>
                 <Layout>
                     <b><h2>Visualization Type</h2></b>
-                    <Dropdown label="Type" list={visualizationType} defaultValue={visualizationType[0]} />
+                    <Dropdown
+                        label="Type"
+                        list={visualizationType}
+                        defaultValue={visualizationType[0]}
+                        listener={this.handleDropdownChange} />
                 </Layout>
 
                 <hr />
 
                 <Box ml={2}>
                     <b><h2>Display Global Poverty Statistics</h2></b>
-                    <Dropdown label="Country" list={dummy2} /> <br />
-                    <Dropdown label="Min Year" list={dummy3} />
-                    <Dropdown label="Max Year" list={dummy3} />
+                    <Dropdown label={this.state.typeLabel} list={dummy2} listener={this.handleDropdownChange} /> <br />
+                    <Dropdown label="Min Year" list={dummy3} listener={this.handleDropdownChange} />
+                    <Dropdown label="Max Year" list={dummy3} listener={this.handleDropdownChange} />
                     <br />
                     <br />
                     {this.state.country} - Graph Visualization
@@ -128,9 +143,10 @@ class Basic extends React.Component {
 
                 <Box ml={2}>
                     <b><h2>Add/Update Global Poverty Data</h2></b>
-                    <Dropdown label="Country" list={dummy2} />
-                    <Dropdown label="Year" list={dummy3} />
-                    <Dropdown label="Percentage" list={dummy3} /> <br /> <br />
+                    <Dropdown label={this.state.typeLabel} list={dummy2} listener={this.handleDropdownChange} />
+                    <Dropdown label="Year" list={dummy3} listener={this.handleDropdownChange} />
+                    <Dropdown label="Percentage" list={dummy3} listener={this.handleDropdownChange} />
+                    <br /> <br />
                     <Button variant="outlined" color="primary" type="submit">Submit</Button>
                 </Box>
 
@@ -138,8 +154,9 @@ class Basic extends React.Component {
 
                 <Box ml={2}>
                     <b><h2>Delete User-Inserted Global Poverty Data</h2></b>
-                    <Dropdown label="Country" list={dummy2} />
-                    <Dropdown label="Year" list={dummy3} /> <br /> <br />
+                    <Dropdown label={this.state.typeLabel} list={dummy2} listener={this.handleDropdownChange} />
+                    <Dropdown label="Year" list={dummy3} listener={this.handleDropdownChange} />
+                    <br /> <br />
                     <Button variant="outlined" color="primary" type="submit">Submit</Button>
                 </Box>
             </div>
