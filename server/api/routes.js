@@ -14,7 +14,7 @@ router.get('/test', (req, res) => {
 });
 
 router.post('/listCountries', (req, res) => {
-    var query = "SELECT DISTINCT entity FROM extremePoverty ORDER BY entity ASC";
+    var query = "SELECT DISTINCT entity FROM country_poverty_share ORDER BY entity ASC";
     var countries = [];
 
     pool.getConnection(function (err, connection) {
@@ -56,20 +56,16 @@ router.post('/listRegions', (req, res) => {
 router.post('/find', (req, res) => {
     const { location, minYear, maxYear, type } = req.body;
 
-    var table = "extremePoverty";
-    var locationType = "entity";
-    var percentageType = "percentExtremePoverty";
-    var yearType = "year";
-    if (type === 'World Region') {
-        table = "region_poverty_share";
-        locationType = "region";
-        percentageType = "Share";
-        yearType = "Year";
-    }
+    var table = type === 'Country' ? "country_poverty_share" : "region_poverty_share";
+    var locationType = type === 'Country' ? "Entity" : "Region";
+    var percentageType = "Share";
+    var yearType = "Year";
 
-    var query = "SELECT DISTINCT * FROM " + table + " WHERE year >= " + minYear + " AND year <= " + maxYear + " AND " + locationType + " = \"" + location + "\"" +
+    var query = "SELECT DISTINCT * FROM " + table + " WHERE " + yearType + " >= " + minYear + " AND " + yearType + " <= " + maxYear + " AND " + locationType + " = \"" + location + "\"" +
         " ORDER BY " + yearType + " ASC"
     var data = [];
+
+    console.log(query);
 
     pool.getConnection(function (err, connection) {
         connection.query(query, function (err, rows) {
@@ -78,11 +74,14 @@ router.post('/find', (req, res) => {
 
             for (var i = 0; i < rows.length; i++) {
                 const row = rows[i];
+                console.log(row);
                 data.push({
                     xValue: row[yearType],
                     yValue: row[percentageType],
                 })
             }
+
+            console.log(data);
             res.send({ graphData: data });
         });
     });
@@ -91,16 +90,10 @@ router.post('/find', (req, res) => {
 router.post('/insert', (req, res) => {
     const { location, year, percentage, type } = req.body;
 
-    var table = "extremePoverty";
-    var locationType = "entity";
-    var percentageType = "percentExtremePoverty";
-    var yearType = "year";
-    if (type === 'World Region') {
-        table = "region_poverty_share";
-        locationType = "region";
-        percentageType = "Share";
-        yearType = "Year";
-    }
+    var table = type === 'Country' ? "country_poverty_share" : "region_poverty_share";
+    var locationType = type === 'Country' ? "Entity" : "Region";
+    var percentageType = "Share";
+    var yearType = "Year";
 
     var query = "INSERT INTO " + table + " (" + locationType + "," + yearType + "," + percentageType + ")" +
         " VALUES(\"" + location + "\"," + year + "," + percentage + ");";
@@ -119,16 +112,10 @@ router.post('/insert', (req, res) => {
 router.post('/update', (req, res) => {
     const { location, year, percentage, type } = req.body;
 
-    var table = "extremePoverty";
-    var locationType = "entity";
-    var percentageType = "percentExtremePoverty";
-    var yearType = "year";
-    if (type === 'World Region') {
-        table = "region_poverty_share";
-        locationType = "region";
-        percentageType = "Share";
-        yearType = "Year";
-    }
+    var table = type === 'Country' ? "country_poverty_share" : "region_poverty_share";
+    var locationType = type === 'Country' ? "Entity" : "Region";
+    var percentageType = "Share";
+    var yearType = "Year";
 
     var query = "UPDATE " + table + " SET " + percentageType + "=" + percentage + " WHERE " +
         locationType + "=\"" + location + "\" AND " + yearType + "=" + year + ";";
@@ -148,16 +135,9 @@ router.post('/update', (req, res) => {
 router.post('/delete', (req, res) => {
     const { location, year, type } = req.body;
 
-    var table = "extremePoverty";
-    var locationType = "entity";
-    var percentageType = "percentExtremePoverty";
-    var yearType = "year";
-    if (type === 'World Region') {
-        table = "region_poverty_share";
-        locationType = "region";
-        percentageType = "Share";
-        yearType = "Year";
-    }
+    var table = type === 'Country' ? "country_poverty_share" : "region_poverty_share";
+    var locationType = type === 'Country' ? "Entity" : "Region";
+    var yearType = "Year";
 
     var query = "DELETE FROM " + table + " WHERE " +
         locationType + "=\"" + location + "\" AND " + yearType + "=" + year + ";";
@@ -174,26 +154,3 @@ router.post('/delete', (req, res) => {
 });
 
 module.exports = router;
-
-// testConnection("SELECT * FROM extremePoverty WHERE year > 1980 AND year < 2000 AND country = \"United States\"");
-// function searchConnection(query) {
-//     connection = mysql.createConnection(secrets.getSqlCredentials());
-//     connection.connect();
-//     var res = connection.query(query, function (err, result, fields) {
-//         // if any error while executing above query, throw error
-//         if (err) {
-//             // connection.end();
-//             return "error";
-//         }
-//         // if there is no error, you have the result
-//         for (var i = 0; i < result.length; i++){
-//             res += result[i].entity + " " + result[i].code + " " + result[i].year + " " + result[i].percentExtremePoverty + "\n";
-//         }
-//         return res;
-//     });
-//     // const res = await connection.query(query);
-//     connection.end();
-//     console.log(res);
-
-//     // return res;
-// }
