@@ -13,69 +13,164 @@ router.get('/test', (req, res) => {
     res.json({ data: "Hello World" });
 });
 
-router.post('/find', (req, res) => {
-    // Parse request here
-    var country = "United States";
-    var minYear = 1980;
-    var maxYear = 2000;
-    var str_min = minYear.toString();
-    var str_max = maxYear.toString();
+router.post('/listCountries', (req, res) => {
+    var query = "SELECT DISTINCT entity FROM extremePoverty ORDER BY entity ASC";
+    var countries = [];
 
-    var query = "SELECT * FROM extremePoverty WHERE year > " + str_min + " AND year < " + str_max + " AND entity = \"" + country + "\""
-    var data = "";
+    pool.getConnection(function (err, connection) {
+        connection.query(query, function (err, rows) {
+            connection.release();
+            if (err) throw err;
+
+            for (var i = 0; i < rows.length; i++) {
+                countries.push(rows[i].entity);
+            }
+
+            res.status(200).json({
+                countries: countries,
+            })
+        });
+    });
+})
+
+router.post('/listRegions', (req, res) => {
+    var query = "SELECT DISTINCT region FROM region_poverty_share ORDER BY region ASC";
+    var regions = [];
+
+    pool.getConnection(function (err, connection) {
+        connection.query(query, function (err, rows) {
+            connection.release();
+            if (err) throw err;
+
+            for (var i = 0; i < rows.length; i++) {
+                regions.push(rows[i].region);
+            }
+
+            res.status(200).json({
+                regions: regions,
+            })
+        });
+    });
+})
+
+router.post('/find', (req, res) => {
+    const { location, minYear, maxYear, type } = req.body;
+
+    var table = "extremePoverty";
+    var locationType = "entity";
+    var percentageType = "percentExtremePoverty";
+    var yearType = "year";
+    if (type === 'World Region') {
+        table = "region_poverty_share";
+        locationType = "region";
+        percentageType = "Share";
+        yearType = "Year";
+    }
+
+    var query = "SELECT DISTINCT * FROM " + table + " WHERE year >= " + minYear + " AND year <= " + maxYear + " AND " + locationType + " = \"" + location + "\"" +
+        " ORDER BY " + yearType + " ASC"
+    var data = [];
+
+    pool.getConnection(function (err, connection) {
+        connection.query(query, function (err, rows) {
+            connection.release();
+            if (err) throw err;
+
+            for (var i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                data.push({
+                    xValue: row[yearType],
+                    yValue: row[percentageType],
+                })
+            }
+            res.send({ graphData: data });
+        });
+    });
+})
+
+router.post('/insert', (req, res) => {
+    const { location, year, percentage, type } = req.body;
+
+    var table = "extremePoverty";
+    var locationType = "entity";
+    var percentageType = "percentExtremePoverty";
+    var yearType = "year";
+    if (type === 'World Region') {
+        table = "region_poverty_share";
+        locationType = "region";
+        percentageType = "Share";
+        yearType = "Year";
+    }
+
+    var query = "INSERT INTO " + table + " (" + locationType + "," + yearType + "," + percentageType + ")" +
+        " VALUES(\"" + location + "\"," + year + "," + percentage + ");";
+
+    console.log(query);
+
+    pool.getConnection(function (err, connection) {
+        connection.query(query, function (err, result) {
+            connection.release();
+            if (err) throw err;
+            res.send({ location: location, year: year });
+        });
+    });
+});
+
+router.post('/update', (req, res) => {
+    const { location, year, percentage, type } = req.body;
+
+    var table = "extremePoverty";
+    var locationType = "entity";
+    var percentageType = "percentExtremePoverty";
+    var yearType = "year";
+    if (type === 'World Region') {
+        table = "region_poverty_share";
+        locationType = "region";
+        percentageType = "Share";
+        yearType = "Year";
+    }
+
+    var query = "UPDATE " + table + " SET " + percentageType + "=" + percentage + " WHERE " +
+        locationType + "=\"" + location + "\" AND " + yearType + "=" + year + ";";
+
+    console.log(query);
 
     pool.getConnection(function (err, connection) {
         connection.query(query, function (err, result) {
             connection.release();
             if (err) throw err;
 
-            for (var i = 0; i < result.length; i++) {
-                data += result[i].entity + " " + result[i].code + " " + result[i].year + " " + result[i].percentExtremePoverty + "\n";
-            }
-            console.log(data);
-            res.send(data);
+            res.status(200);
         });
     });
-})
-
-router.post('/insert', (req, res) => {
-    // Parse request
-    var country = "United States";
-    var year = 1980;
-    var percent = 59.2;
-    var str_con = "(\'" + country + "\',";
-    var str_code = " ,";
-    var str_year = year.toString() + ",";
-    var str_percent = percent.toString() + ")";
-    //var result = updateConnection("INSERT INTO extremePoverty VALUES " + str_con + str_code + str_year + str_percent);
-    res.status(200);
-    // Insert row into database here
-});
-
-router.post('/update', (req, res) => {
-    // Parse request
-    var country = "United States";
-    var year = 1980;
-    var percent = 59.2;
-    res.status(200);
-    // Update row
-    console.log(req);
 });
 
 router.post('/delete', (req, res) => {
-    // Parse request
-    var country = "United States";
-    var year = 1980;
-    var str_country = "\"" + country + "\"";
-    var str_year = year.toString();
-    var query = "DELETE FROM extremePoverty WHERE entity = " + country + " AND year = " + str_year;
-    //var result = updateConnection(query);
-    //res.send(result);
-    res.status(200);
+    const { location, year, type } = req.body;
 
-    // Delete row from database here
+    var table = "extremePoverty";
+    var locationType = "entity";
+    var percentageType = "percentExtremePoverty";
+    var yearType = "year";
+    if (type === 'World Region') {
+        table = "region_poverty_share";
+        locationType = "region";
+        percentageType = "Share";
+        yearType = "Year";
+    }
 
-    console.log("4");
+    var query = "DELETE FROM " + table + " WHERE " +
+        locationType + "=\"" + location + "\" AND " + yearType + "=" + year + ";";
+
+    console.log(query);
+
+    pool.getConnection(function (err, connection) {
+        connection.query(query, function (err, result) {
+            connection.release();
+            if (err) throw err;
+            res.send({ location: location, year: year });
+        });
+    });
 });
 
 module.exports = router;
@@ -102,18 +197,3 @@ module.exports = router;
 
 //     // return res;
 // }
-
-
-function updateConnection(query) {
-    connection = mysql.createConnection(secrets.getSqlCredentials());
-    connection.connect();
-    connection.query(query, function (err, result, fields) {
-        // if any error while executing above query, throw error
-        if (err) {
-            connection.end();
-            return error;
-        }
-        connection.end();
-        return "success";
-    });
-}

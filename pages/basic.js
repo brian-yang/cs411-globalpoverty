@@ -3,6 +3,7 @@ import Dropdown from '../components/Dropdown';
 import axios from 'axios';
 import Button from '@material-ui/core/Button';
 import Box from '@material-ui/core/Box';
+import TextField from '@material-ui/core/TextField';
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid,
 } from 'recharts';
@@ -12,59 +13,38 @@ const visualizationType = [
     "World Region"
 ]
 
-const dummy = {
-    1979: 0.5,
-    1980: 0.7,
-    1981: 0.7,
-    1982: 1.2,
-    1983: 0.7,
-    1984: 1,
-    1985: 2,
-}
-const dummy2 = [
-    "United States",
-    "Canada",
-]
-const dummy3 = [
-    1976,
-    1981,
-    1995,
-]
-
-const data = [
-    {
-        name: 'Page A', uv: 4000, pv: 2400, amt: 2400,
-    },
-    {
-        name: 'Page B', uv: 3000, pv: 1398, amt: 2210,
-    },
-    {
-        name: 'Page C', uv: 2000, pv: 9800, amt: 2290,
-    },
-    {
-        name: 'Page D', uv: 2780, pv: 3908, amt: 2000,
-    },
-    {
-        name: 'Page E', uv: 1890, pv: 4800, amt: 2181,
-    },
-    {
-        name: 'Page F', uv: 2390, pv: 3800, amt: 2500,
-    },
-    {
-        name: 'Page G', uv: 3490, pv: 4300, amt: 2100,
-    },
-];
-
 class Basic extends React.Component {
     constructor(props) {
         super(props);
+
+        var years = [];
+        for (var i = 0; i < 121; i++) {
+            years.push(i + 1900);
+        }
+
         this.state = {
-            country: "United States",
             loading: true,
             typeLabel: "Country",
+            list: [],
+            countries: [],
+            regions: [],
+            years: years,
+            display: {},
+            change: {},
+            del: {},
+            userRows: [],
+            graphData: [],
+            canGraphData: false,
         }
+
         this.fetchData = this.fetchData.bind(this);
-        this.handleDropdownChange = this.handleDropdownChange.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
+        this.handlePercentChange = this.handlePercentChange.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
+        this.getDisplayData = this.getDisplayData.bind(this);
+        this.updateDisplayData = this.updateDisplayData.bind(this);
+        this.insertDisplayData = this.insertDisplayData.bind(this);
+        this.deleteDisplayData = this.deleteDisplayData.bind(this);
     }
 
     componentDidMount() {
@@ -73,16 +53,27 @@ class Basic extends React.Component {
 
     fetchData() {
         this.setState({ loading: true }, () => {
-            axios.post('/api/find/', {
-                params: {
-                    minYear: 1900,
-                    maxYear: 2050,
-                }
-            })
+            axios.post('/api/listCountries')
                 .then((response) => {
-                    const { data } = response.data;
+                    const { countries } = response.data;
                     this.setState({
-                        percentages: dummy,
+                        countries: countries,
+                        list: countries,
+                        loading: false,
+                    });
+                })
+                .catch((error) => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                });
+        });
+
+        this.setState({ loading: true }, () => {
+            axios.post('/api/listRegions')
+                .then((response) => {
+                    const { regions } = response.data;
+                    this.setState({
+                        regions: regions,
                         loading: false,
                     });
                 })
@@ -93,13 +84,241 @@ class Basic extends React.Component {
         });
     }
 
-    handleDropdownChange(label, value) {
-        console.log(label, value);
+    handlePercentChange(event) {
+        event.preventDefault();
+        this.handleInputChange("Percentage", "change", event.target.value);
+    }
+
+    handleInputChange(label, action, value) {
+        console.log(label, action, value);
+
         if (label === "Type") {
+            var list = this.state.countries;
+            if (value === "World Region") {
+                list = this.state.regions;
+            }
+
             this.setState({
                 typeLabel: value,
+                list: list,
+            });
+        } else if (action === "display") {
+            var display = this.state.display;
+
+            if (label === "Min Year") {
+                display.minYear = parseInt(value);
+            }
+            else if (label === "Max Year") {
+                display.maxYear = parseInt(value);
+            }
+            else {
+                display.location = value;
+            }
+
+            this.setState({
+                display: display,
+            });
+        } else if (action === "change") {
+            var change = this.state.change;
+
+            if (label === "Year") {
+                change.year = parseInt(value);
+            } else if (label === "Percentage") {
+                change.percentage = parseFloat(value);
+            } else {
+                change.location = value;
+            }
+
+            this.setState({
+                change: change,
+            });
+        } else if (action === "delete") {
+            var del = this.state.del;
+
+            if (label === "Year") {
+                del.year = parseInt(value);
+            } else {
+                del.location = value;
+            }
+
+            this.setState({
+                del: del,
             });
         }
+    }
+
+    onSubmit = (action) => (event) => {
+        event.preventDefault();
+        if (action === "display" && "location" in this.state.display) {
+            const location = this.state.display.location;
+            var minYear = 1900;
+            var maxYear = 2020;
+            if ('minYear' in this.state.display) {
+                minYear = this.state.display.minYear;
+            }
+            if ('maxYear' in this.state.display) {
+                maxYear = this.state.display.maxYear;
+            }
+
+            if (minYear > maxYear) {
+                alert("Invalid year range.")
+                return;
+            }
+
+            this.getDisplayData(location, minYear, maxYear, this.state.typeLabel);
+        }
+
+        else if (action === "change") {
+            if ((!("location" in this.state.change)) ||
+                (!("year" in this.state.change)) ||
+                (!("percentage" in this.state.change))) {
+                return;
+            }
+
+            var { location, year, percentage } = this.state.change;
+            if (percentage < 0 || percentage > 100) {
+                alert("Invalid percentage");
+                return;
+            }
+
+            console.log(this.state.userRows);
+            console.log(location, year);
+            console.log(this.state.userRows.some((row) => {
+                row.location === location && row.year == year
+            }));
+
+            var containsRow = false;
+            for (var i = 0; i < this.state.userRows.length; i++) {
+                var userRow = this.state.userRows[i];
+                if (userRow.location === location && userRow.year == year) {
+                    containsRow = true;
+                    break;
+                }
+            }
+
+            if (containsRow) {
+                this.updateDisplayData(location, year, percentage, this.state.typeLabel);
+            } else {
+                this.insertDisplayData(location, year, percentage, this.state.typeLabel);
+            }
+        }
+
+        else if (action === "delete") {
+            if ((!("location" in this.state.del)) ||
+                (!("year" in this.state.del))) {
+                return;
+            }
+
+            var { location, year } = this.state.del;
+
+            var containsRow = false;
+            for (var i = 0; i < this.state.userRows.length; i++) {
+                var userRow = this.state.userRows[i];
+                if (userRow.location === location && userRow.year == year) {
+                    containsRow = true;
+                    break;
+                }
+            }
+
+            if (!containsRow) {
+                alert("Data cannot be deleted. User can only delete user-inserted data.");
+                return;
+            }
+
+            this.deleteDisplayData(location, year, this.state.typeLabel);
+        }
+    }
+
+    updateDisplayData(location, year, percentage, type) {
+        this.setState({ loading: true }, () => {
+            axios.post('/api/update', {
+                location: location,
+                year: year,
+                percentage: percentage,
+                type: type,
+            })
+                .then((response) => { })
+                .catch((error) => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                });
+        });
+    }
+
+    insertDisplayData(location, year, percentage, type) {
+        this.setState({ loading: true }, () => {
+            axios.post('/api/insert', {
+                location: location,
+                year: year,
+                percentage: percentage,
+                type: type,
+            })
+                .then((response) => {
+                    const { location, year } = response.data;
+
+                    var userRows = this.state.userRows;
+                    userRows.push({ location: location, year: year });
+
+                    this.setState({
+                        userRows: userRows,
+                        loading: false,
+                    });
+                })
+                .catch((error) => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                });
+        });
+    }
+
+    deleteDisplayData(location, year, type) {
+        this.setState({ loading: true }, () => {
+            axios.post('/api/delete', {
+                location: location,
+                year: year,
+                type: type,
+            })
+                .then((response) => {
+                    const { location, year } = response.data;
+
+                    var userRows = this.state.userRows.filter((row) => {
+                        row.location !== location && row.year != year
+                    });
+                    console.log(userRows);
+
+                    this.setState({
+                        userRows: userRows,
+                        loading: false,
+                    });
+                })
+                .catch((error) => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                });
+        });
+    }
+
+    getDisplayData(location, minYear, maxYear, type) {
+        this.setState({ loading: true }, () => {
+            axios.post('/api/find', {
+                location: location,
+                minYear: minYear,
+                maxYear: maxYear,
+                type: type,
+            })
+                .then((response) => {
+                    const { graphData } = response.data;
+                    this.setState({
+                        graphData: graphData,
+                        canGraphData: true,
+                        loading: false,
+                    });
+                })
+                .catch((error) => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                });
+        });
     }
 
     render() {
@@ -111,55 +330,70 @@ class Basic extends React.Component {
                         label="Type"
                         list={visualizationType}
                         defaultValue={visualizationType[0]}
-                        listener={this.handleDropdownChange} />
+                        listener={this.handleInputChange} />
                 </Layout>
 
                 <hr />
 
                 <Box ml={2}>
                     <b><h2>Display Global Poverty Statistics</h2></b>
-                    <Dropdown label={this.state.typeLabel} list={dummy2} listener={this.handleDropdownChange} /> <br />
-                    <Dropdown label="Min Year" list={dummy3} listener={this.handleDropdownChange} />
-                    <Dropdown label="Max Year" list={dummy3} listener={this.handleDropdownChange} />
+                    <Dropdown label={this.state.typeLabel} list={this.state.list} action="display" listener={this.handleInputChange} /> <br />
+                    <Dropdown label="Min Year" list={this.state.years} action="display" listener={this.handleInputChange} />
+                    <Dropdown label="Max Year" list={this.state.years} action="display" listener={this.handleInputChange} /> <br />
+                    <Button variant="outlined" color="primary" onClick={this.onSubmit("display")} type="submit">Submit</Button>
+
                     <br />
                     <br />
-                    {this.state.country} - Graph Visualization
+                    Graph Visualization
 
                     <br />
                     <br />
 
-                    <LineChart width={500} height={300} data={data}>
-                        <XAxis dataKey="name" />
-                        <YAxis />
-                        <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
-                        <Line type="monotone" dataKey="uv" stroke="#8884d8" />
-                    </LineChart>
+                    {this.state.canGraphData &&
+                        <LineChart width={500} height={300} data={this.state.graphData}>
+                            <XAxis dataKey="xValue" />
+                            <YAxis />
+                            <CartesianGrid stroke="#eee" strokeDasharray="5 5" />
+                            <Line type="monotone" dataKey="yValue" stroke="#8884d8" />
+                        </LineChart>
+                    }
                 </Box>
 
-                < br />
+                <br />
                 <br />
 
                 <hr />
 
                 <Box ml={2}>
                     <b><h2>Add/Update Global Poverty Data</h2></b>
-                    <Dropdown label={this.state.typeLabel} list={dummy2} listener={this.handleDropdownChange} />
-                    <Dropdown label="Year" list={dummy3} listener={this.handleDropdownChange} />
-                    <Dropdown label="Percentage" list={dummy3} listener={this.handleDropdownChange} />
+                    <Dropdown label={this.state.typeLabel} list={this.state.list} action="change" listener={this.handleInputChange} />
+                    <Dropdown label="Year" list={this.state.years} action="change" listener={this.handleInputChange} />
+
                     <br /> <br />
-                    <Button variant="outlined" color="primary" type="submit">Submit</Button>
+                    <TextField
+                        id="standard-number"
+                        label="% of People in Poverty"
+                        type="number"
+                        onChange={this.handlePercentChange}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <br /> <br />
+
+                    <Button variant="outlined" color="primary" onClick={this.onSubmit("change")} type="submit">Submit</Button>
                 </Box>
 
                 <hr />
 
                 <Box ml={2}>
                     <b><h2>Delete User-Inserted Global Poverty Data</h2></b>
-                    <Dropdown label={this.state.typeLabel} list={dummy2} listener={this.handleDropdownChange} />
-                    <Dropdown label="Year" list={dummy3} listener={this.handleDropdownChange} />
+                    <Dropdown label={this.state.typeLabel} list={this.state.list} action="delete" listener={this.handleInputChange} />
+                    <Dropdown label="Year" list={this.state.years} action="delete" listener={this.handleInputChange} />
                     <br /> <br />
-                    <Button variant="outlined" color="primary" type="submit">Submit</Button>
+                    <Button variant="outlined" color="primary" onClick={this.onSubmit("delete")} type="submit">Submit</Button>
                 </Box>
-            </div>
+            </div >
         );
     }
 }

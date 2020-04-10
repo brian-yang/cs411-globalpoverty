@@ -5,16 +5,10 @@ import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
 
 const styles = (theme) => ({
-    root: {
-        minWidth: 120,
-    },
     formControl: {
         margin: theme.spacing(1),
         minWidth: 200,
         width: 100,
-    },
-    selectEmpty: {
-        marginTop: theme.spacing(2),
     },
 });
 
@@ -28,7 +22,7 @@ class Dropdown extends React.Component {
     }
 
     handleChange(event) {
-        this.props.listener(this.props.label, event.target.value);
+        this.props.listener(this.props.label, this.props.action, event.target.value);
         this.setState({
             formValue: event.target.value,
         });
