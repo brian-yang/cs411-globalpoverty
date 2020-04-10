@@ -4,6 +4,11 @@ const secrets = require("../secrets.js");
 const router = express.Router();
 const connection = mysql.createConnection(secrets.getSqlCredentials());
 
+var pool = mysql.createPool({
+    connectionLimit: 10,
+    ...secrets.getSqlCredentials(),
+});
+
 router.get('/test', (req, res) => {
     res.json({ data: "Hello World" });
 });
@@ -17,19 +22,21 @@ router.post('/find', (req, res) => {
     var str_max = maxYear.toString();
 
     var query = "SELECT * FROM extremePoverty WHERE year > " + str_min + " AND year < " + str_max + " AND entity = \"" + country + "\""
-    connection.connect();
     var data = "";
-    connection.query(query, function (err, result, fields) {
-        if (err) {
-            return "error";
-        }
-        for (var i = 0; i < result.length; i++){
-            data += result[i].entity + " " + result[i].code + " " + result[i].year + " " + result[i].percentExtremePoverty + "\n";
-        }
-        console.log(data);
-        res.send(data);
+
+    pool.getConnection(function (err, connection) {
+        connection.query(query, function (err, result) {
+            connection.release();
+            if (err) throw err;
+
+            for (var i = 0; i < result.length; i++) {
+                data += result[i].entity + " " + result[i].code + " " + result[i].year + " " + result[i].percentExtremePoverty + "\n";
+            }
+            console.log(data);
+            res.send(data);
+        });
     });
-});
+})
 
 router.post('/insert', (req, res) => {
     // Parse request
@@ -38,9 +45,9 @@ router.post('/insert', (req, res) => {
     var percent = 59.2;
     var str_con = "(\'" + country + "\',";
     var str_code = " ,";
-    var str_year =  year.toString() + ",";
-    var str_percent =  percent.toString() + ")";
-    var result = updateConnection("INSERT INTO extremePoverty VALUES " + str_con + str_code + str_year + str_percent);
+    var str_year = year.toString() + ",";
+    var str_percent = percent.toString() + ")";
+    //var result = updateConnection("INSERT INTO extremePoverty VALUES " + str_con + str_code + str_year + str_percent);
     res.status(200);
     // Insert row into database here
 });
@@ -62,10 +69,10 @@ router.post('/delete', (req, res) => {
     var str_country = "\"" + country + "\"";
     var str_year = year.toString();
     var query = "DELETE FROM extremePoverty WHERE entity = " + country + " AND year = " + str_year;
-    var result = updateConnection(query);
-    res.send(result);
+    //var result = updateConnection(query);
+    //res.send(result);
     res.status(200);
-    
+
     // Delete row from database here
 
     console.log("4");
@@ -73,7 +80,7 @@ router.post('/delete', (req, res) => {
 
 module.exports = router;
 
-    // testConnection("SELECT * FROM extremePoverty WHERE year > 1980 AND year < 2000 AND country = \"United States\"");
+// testConnection("SELECT * FROM extremePoverty WHERE year > 1980 AND year < 2000 AND country = \"United States\"");
 // function searchConnection(query) {
 //     connection = mysql.createConnection(secrets.getSqlCredentials());
 //     connection.connect();

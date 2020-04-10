@@ -27,11 +27,8 @@ export default function ButtonAppBar() {
                     <Link href="/">
                         <Button color="inherit">Home</Button>
                     </Link>
-                    <Link href="/viewData">
-                        <Button color="inherit">Credits</Button>
-                    </Link>
-                    <Link href="/insertDelete">
-                        <Button color="inherit">Page 2</Button>
+                    <Link href="/basic">
+                        <Button color="inherit">Basic Functions</Button>
                     </Link>
                 </Toolbar>
             </AppBar>

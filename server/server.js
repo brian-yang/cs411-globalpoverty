@@ -1,11 +1,6 @@
 const express = require('express');
 const next = require('next');
-const mysql = require('mysql');
-const secrets = require("./secrets.js");
 const api = require("./api/routes.js");
-
-const connection = mysql.createConnection(secrets.getSqlCredentials());
-connection.connect();
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -30,6 +25,5 @@ app.prepare()
     })
     .catch((ex) => {
         console.error(ex.stack);
-        connection.end();
         process.exit(1);
     })
