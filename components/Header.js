@@ -30,6 +30,9 @@ export default function ButtonAppBar() {
                     <Link href="/basic">
                         <Button color="inherit">Basic Functions</Button>
                     </Link>
+                    <Link href="/advanced">
+                        <Button color="inherit">Advanced Function</Button>
+                    </Link>
                 </Toolbar>
             </AppBar>
         </div>

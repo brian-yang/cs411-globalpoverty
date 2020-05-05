@@ -2,11 +2,12 @@ const express = require('express');
 const mysql = require('mysql');
 const secrets = require("../secrets.js");
 const router = express.Router();
-const connection = mysql.createConnection(secrets.getSqlCredentials());
+const helper = require("../helper/helper.js");
 
 var pool = mysql.createPool({
     connectionLimit: 10,
     ...secrets.getSqlCredentials(),
+    multipleStatements: true,
 });
 
 router.get('/test', (req, res) => {
@@ -151,6 +152,20 @@ router.post('/delete', (req, res) => {
             res.send({ location: location, year: year });
         });
     });
+});
+
+router.post('/uploadCSV', (req, res) => {
+    const { data } = req.body;
+
+    var tuples = helper.parseData(data);
+    console.log(tuples);
+
+    var message = "success";
+    if (tuples == null) {
+        message = "fail";
+    }
+
+    res.send(message);
 });
 
 module.exports = router;
