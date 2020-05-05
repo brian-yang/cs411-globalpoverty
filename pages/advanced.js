@@ -74,9 +74,10 @@ class Advanced extends React.Component {
     uploadFileToAPI = (event) => {
         var url = '/api/uploadCSV';
         var formData = event.target.result;
+        var fileName = this.state.fileName;
 
         this.setState({ loading: true }, () => {
-            axios.post(url, { data: formData })
+            axios.post(url, { data: formData, filename: fileName})
                 .then((response) => {
                     console.log(response);
                     this.setState({ loading: false });
