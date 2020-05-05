@@ -47,7 +47,15 @@ function parseData(data) {
             continue;
         }
 
-        var tuple = [tokens[countryInd], tokens[yearInd], tokens[valueInd]];
+        var country = tokens[countryInd];
+        var year = parseInt(tokens[yearInd]);
+        var value = parseFloat(tokens[valueInd]);
+
+        if (year.isNaN() || value.isNaN()) {
+            continue;
+        }
+
+        var tuple = [country, year, value];
         tuples.push(tuple);
     }
 

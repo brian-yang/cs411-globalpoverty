@@ -14,7 +14,9 @@ class Advanced extends React.Component {
         this.state = {
             loading: true,
             fileName: '',
-            uploadedFile: false
+            uploadedFile: false,
+            list: [],
+            years: [],
         }
 
         this.fetchData = this.fetchData.bind(this);
@@ -79,6 +81,9 @@ class Advanced extends React.Component {
         this.setState({ loading: true }, () => {
             axios.post(url, { data: formData, filename: fileName})
                 .then((response) => {
+                    if (response === "fail") {
+                        alert("Failed to upload CSV file");
+                    }
                     console.log(response);
                     this.setState({ loading: false });
                 })
@@ -140,7 +145,7 @@ class Advanced extends React.Component {
                 <hr />
 
                 <Box ml={2}>
-                    {/* <b><h2>Display Global Poverty Statistics</h2></b>
+                    <b><h2>Poverty Data Correlation</h2></b>
                     <Dropdown label={this.state.typeLabel} list={this.state.list} action="display" listener={this.handleInputChange} /> <br />
                     <Dropdown label="Min Year" list={this.state.years} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Max Year" list={this.state.years} action="display" listener={this.handleInputChange} /> <br />
@@ -153,7 +158,7 @@ class Advanced extends React.Component {
                     <br />
                     <br />
 
-                    {this.state.canGraphData &&
+                    {/* {this.state.canGraphData &&
                         <LineChart width={500} height={300} data={this.state.graphData}>
                             <XAxis dataKey="xValue" />
                             <YAxis />
