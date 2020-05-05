@@ -10,7 +10,7 @@ function parseLine(line) {
 
 function parseData(data) {
     if (data.charAt(data.length - 1) === "\n") {
-        data = data.substr(0, data.length - 2);
+        data = data.substr(0, data.length - 1);
     }
 
     lines = data.split("\n");
