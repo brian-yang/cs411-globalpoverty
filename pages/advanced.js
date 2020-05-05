@@ -15,8 +15,10 @@ class Advanced extends React.Component {
             loading: true,
             fileName: '',
             uploadedFile: false,
-            list: [],
+            countryList: [],
             years: [],
+            typeLabel: "Country",
+            files: [],
         }
 
         this.fetchData = this.fetchData.bind(this);
@@ -24,6 +26,7 @@ class Advanced extends React.Component {
         this.onFileUpload = this.onFileUpload.bind(this);
         this.uploadFileToAPI = this.uploadFileToAPI.bind(this);
         this.insertDisplayData = this.insertDisplayData.bind(this);
+        this.onSubmit = this.onSubmit.bind(this);
     }
 
     componentDidMount() {
@@ -37,7 +40,7 @@ class Advanced extends React.Component {
                     const { countries } = response.data;
                     this.setState({
                         countries: countries,
-                        list: countries,
+                        countryList: countries,
                         loading: false,
                     });
                 })
@@ -53,6 +56,9 @@ class Advanced extends React.Component {
         this.handleInputChange("Percentage", "change", event.target.value);
     }
 
+    onSubmit = (action) => (event) => { }
+
+
     onFileUpload = (event) => {
         var file = event.target.files[0];
         console.log(file);
@@ -64,6 +70,7 @@ class Advanced extends React.Component {
         this.setState({
             fileName: file.name,
             uploadedFile: true,
+            files: [...this.state.files, file.name]
         })
 
         console.log(file);
@@ -83,6 +90,9 @@ class Advanced extends React.Component {
                 .then((response) => {
                     if (response === "fail") {
                         alert("Failed to upload CSV file");
+                        this.setState({
+                            files: files.slice(0, files.length - 1),
+                        })
                     }
                     console.log(response);
                     this.setState({ loading: false });
@@ -146,7 +156,8 @@ class Advanced extends React.Component {
 
                 <Box ml={2}>
                     <b><h2>Poverty Data Correlation</h2></b>
-                    <Dropdown label={this.state.typeLabel} list={this.state.list} action="display" listener={this.handleInputChange} /> <br />
+                    <Dropdown label="Dataset" list={[]} action="display" listener={this.handleInputChange} /> <br />
+                    <Dropdown label={this.state.typeLabel} list={this.state.countryList} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Min Year" list={this.state.years} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Max Year" list={this.state.years} action="display" listener={this.handleInputChange} /> <br />
                     <Button variant="outlined" color="primary" onClick={this.onSubmit("display")} type="submit">Submit</Button>
