@@ -155,39 +155,77 @@ router.post('/delete', (req, res) => {
 });
 
 router.post('/uploadCSV', (req, res) => {
-    const { data,filename } = req.body;
+    const { data, fileName } = req.body;
 
     var tuples = helper.parseData(data);
     console.log(tuples);
-    var fn = filename.substr(0,filename.length-4);
+    var fn = fileName.substr(0, fileName.length - 4);
 
-    pool.getConnection(function (err,connection) {
-        // var dlt = "DROP TABLE custom";
-        var start = "CREATE TABLE " + fn + " (Entity VARCHAR(50) NOT NULL, Year INT(11) NOT NULL, Share DOUBLE NOT NULL)";
-        console.log(start);
-        // connection.query(dlt,function(err,result){
-        // });
-        connection.query(start,function(err,result){
-            if(err) throw err;
-        });
-
-
-        for(var i = 0; i < tuples[1].length; i++){
-            var query = "INSERT INTO " + fn +  " (Entity,Year,Share)" +" VALUES(\"" + tuples[1][i][0] + "\"," + tuples[1][i][1] + "," + tuples[1][i][2] + ");";
-            console.log(query);
-            connection.query(query,function(err,result){
-                if(err) throw err;
+    if (tuples !== null) {
+        pool.getConnection(function (err, connection) {
+            var dlt = "DROP TABLE IF EXISTS `" + fn + "`;";
+            connection.query(dlt, function (err, result) {
+                if (err) throw err;
             });
-        }
-        connection.release();
-    });
+
+            var start = "CREATE TABLE " + fn + " (Entity VARCHAR(50) NOT NULL, Year INT(11) NOT NULL, Share DOUBLE NOT NULL)";
+            connection.query(start, function (err, result) {
+                if (err) throw err;
+            });
+
+
+            for (var i = 0; i < tuples[1].length; i++) {
+                var query = "INSERT INTO " + fn + " (Entity,Year,Share)" + " VALUES(\"" + tuples[1][i][0] + "\"," + tuples[1][i][1] + "," + tuples[1][i][2] + ");";
+                console.log(query);
+                connection.query(query, function (err, result) {
+                    if (err) throw err;
+                });
+            }
+            connection.release();
+        });
+    }
 
     var message = "success";
-    if (tuples == null) {
+    if (tuples === null) {
         message = "fail";
     }
 
-    res.send(message);
+    res.send({
+        status: message,
+        fileNameTruncated: fn,
+        fileName: fileName,
+    });
 });
+
+router.post('/getDatasetKeys', (req, res) => {
+    const { datasetName } = req.body;
+
+    pool.getConnection(function (err, connection) {
+        var query = "SELECT Entity as entity,MAX(Year) as maxYear,MIN(Year) as minYear from " + datasetName + " GROUP BY Entity;";
+
+        connection.query(query, function (err, rows) {
+            if (err) throw err;
+            connection.release();
+
+            var entities = [];
+            var minYear = 1900;
+            var maxYear = 2020;
+
+            for (var i = 0; i < rows.length; i++) {
+                entities.push(rows[i].entity);
+                minYear = Math.max(minYear, rows[i].minYear);
+                maxYear = Math.min(maxYear, rows[i].maxYear);
+            }
+
+            res.send({
+                entities: entities,
+                minYear: minYear,
+                maxYear: maxYear,
+            });
+        });
+    });
+
+});
+
 
 module.exports = router;

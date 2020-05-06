@@ -22,7 +22,7 @@ class Advanced extends React.Component {
         }
 
         this.fetchData = this.fetchData.bind(this);
-        this.handlePercentChange = this.handlePercentChange.bind(this);
+        this.handleInputChange = this.handleInputChange.bind(this);
         this.onFileUpload = this.onFileUpload.bind(this);
         this.uploadFileToAPI = this.uploadFileToAPI.bind(this);
         this.insertDisplayData = this.insertDisplayData.bind(this);
@@ -51,9 +51,40 @@ class Advanced extends React.Component {
         });
     }
 
-    handlePercentChange(event) {
-        event.preventDefault();
-        this.handleInputChange("Percentage", "change", event.target.value);
+    handleInputChange(label, action, value) {
+        if (label === "Dataset") {
+            console.log(value);
+            this.getDataset(value);
+        }
+    }
+
+    getDataset(dataset) {
+        var url = '/api/getDatasetKeys';
+
+        this.setState({ loading: true }, () => {
+            axios.post(url, { datasetName: dataset })
+                .then((response) => {
+                    var { entities, minYear, maxYear } = response.data;
+
+                    console.log(response.data);
+
+                    // Get list of years
+                    var years = [];
+                    for (var i = minYear; i <= maxYear; i++) {
+                        years.push(i);
+                    }
+
+                    this.setState({
+                        loading: false,
+                        countryList: entities,
+                        years: years
+                    })
+                })
+                .catch((error) => {
+                    this.setState({ loading: false });
+                    console.log(error);
+                })
+        });
     }
 
     onSubmit = (action) => (event) => { }
@@ -61,21 +92,13 @@ class Advanced extends React.Component {
 
     onFileUpload = (event) => {
         var file = event.target.files[0];
-        console.log(file);
         if (file.type !== "text/csv") {
             alert("Please upload a CSV file");
             return;
         }
 
-        this.setState({
-            fileName: file.name,
-            uploadedFile: true,
-            files: [...this.state.files, file.name]
-        })
-
-        console.log(file);
-
         var reader = new FileReader();
+        reader.fileName = file.name;
         reader.onload = this.uploadFileToAPI;
         reader.readAsText(file);
     }
@@ -83,19 +106,26 @@ class Advanced extends React.Component {
     uploadFileToAPI = (event) => {
         var url = '/api/uploadCSV';
         var formData = event.target.result;
-        var fileName = this.state.fileName;
+        var fileName = event.target.fileName;
 
         this.setState({ loading: true }, () => {
-            axios.post(url, { data: formData, filename: fileName})
+            axios.post(url, { data: formData, fileName: fileName })
                 .then((response) => {
-                    if (response === "fail") {
-                        alert("Failed to upload CSV file");
-                        this.setState({
-                            files: files.slice(0, files.length - 1),
-                        })
-                    }
+                    var { status, fileName, fileNameTruncated } = response.data;
+
                     console.log(response);
                     this.setState({ loading: false });
+
+                    if (status === "fail") {
+                        alert("Failed to upload CSV file");
+                        return;
+                    }
+
+                    this.setState({
+                        fileName: fileName,
+                        uploadedFile: true,
+                        files: [...this.state.files, fileNameTruncated]
+                    })
                 })
                 .catch((error) => {
                     this.setState({ loading: false });
@@ -156,7 +186,7 @@ class Advanced extends React.Component {
 
                 <Box ml={2}>
                     <b><h2>Poverty Data Correlation</h2></b>
-                    <Dropdown label="Dataset" list={[]} action="display" listener={this.handleInputChange} /> <br />
+                    <Dropdown label="Dataset" list={this.state.files} action="display" listener={this.handleInputChange} /> <br />
                     <Dropdown label={this.state.typeLabel} list={this.state.countryList} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Min Year" list={this.state.years} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Max Year" list={this.state.years} action="display" listener={this.handleInputChange} /> <br />

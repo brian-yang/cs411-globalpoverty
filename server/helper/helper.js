@@ -25,7 +25,7 @@ function parseData(data) {
     var valueInd = -1;
 
     for (var i = 0; i < headers.length; i++) {
-        if (headers[i].toLowerCase() === "entity" && countryInd == -1) {
+        if ((headers[i].toLowerCase() === "entity" || headers[i].toLowerCase() === "country") && countryInd == -1) {
             countryInd = i;
         } else if (headers[i].toLowerCase() === "year" && yearInd == -1) {
             yearInd = i;
