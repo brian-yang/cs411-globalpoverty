@@ -16,8 +16,12 @@ class Advanced extends React.Component {
             fileName: '',
             uploadedFile: false,
             countryList: [],
+            filteredCountryList: [],
+            selectedCountry: "",
+            selectedMinYear: 1900,
+            selectedMaxYear: 2020,
+            selectedDataset: "",
             years: [],
-            typeLabel: "Country",
             files: [],
         }
 
@@ -39,8 +43,8 @@ class Advanced extends React.Component {
                 .then((response) => {
                     const { countries } = response.data;
                     this.setState({
-                        countries: countries,
                         countryList: countries,
+                        filteredCountryList: countries,
                         loading: false,
                     });
                 })
@@ -53,8 +57,29 @@ class Advanced extends React.Component {
 
     handleInputChange(label, action, value) {
         if (label === "Dataset") {
-            console.log(value);
             this.getDataset(value);
+            this.setState({
+                selectedDataset: value,
+            })
+            return;
+        }
+
+        if (this.state.selectedDataset === "") {
+            return;
+        }
+
+        if (label === "Country") {
+            this.setState({
+                selectedCountry: value,
+            })
+        } else if (label === "Min Year") {
+            this.setState({
+                selectedMinYear: value,
+            })
+        } else if (label === "Min Year") {
+            this.setState({
+                selectedMaxYear: value,
+            })
         }
     }
 
@@ -74,9 +99,13 @@ class Advanced extends React.Component {
                         years.push(i);
                     }
 
+                    // Get filtered entities/countries
+                    var list = this.state.countryList;
+                    list.filter(value => entities.includes(value));
+
                     this.setState({
                         loading: false,
-                        countryList: entities,
+                        filteredCountryList: list,
                         years: years
                     })
                 })
@@ -87,7 +116,13 @@ class Advanced extends React.Component {
         });
     }
 
-    onSubmit = (action) => (event) => { }
+    onSubmit = (action) => (event) => {
+        event.preventDefault();
+        if (this.state.selectedDataset === "" || this.state.selectedCountry === "") {
+            return;
+        }
+
+    }
 
 
     onFileUpload = (event) => {
@@ -187,7 +222,7 @@ class Advanced extends React.Component {
                 <Box ml={2}>
                     <b><h2>Poverty Data Correlation</h2></b>
                     <Dropdown label="Dataset" list={this.state.files} action="display" listener={this.handleInputChange} /> <br />
-                    <Dropdown label={this.state.typeLabel} list={this.state.countryList} action="display" listener={this.handleInputChange} />
+                    <Dropdown label="Country" list={this.state.filteredCountryList} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Min Year" list={this.state.years} action="display" listener={this.handleInputChange} />
                     <Dropdown label="Max Year" list={this.state.years} action="display" listener={this.handleInputChange} /> <br />
                     <Button variant="outlined" color="primary" onClick={this.onSubmit("display")} type="submit">Submit</Button>

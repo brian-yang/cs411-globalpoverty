@@ -168,14 +168,14 @@ router.post('/uploadCSV', (req, res) => {
                 if (err) throw err;
             });
 
-            var start = "CREATE TABLE " + fn + " (Entity VARCHAR(50) NOT NULL, Year INT(11) NOT NULL, Share DOUBLE NOT NULL)";
+            var start = "CREATE TABLE `" + fn + "` (Entity VARCHAR(50) NOT NULL, Year INT(11) NOT NULL, Share DOUBLE NOT NULL)";
             connection.query(start, function (err, result) {
                 if (err) throw err;
             });
 
 
             for (var i = 0; i < tuples[1].length; i++) {
-                var query = "INSERT INTO " + fn + " (Entity,Year,Share)" + " VALUES(\"" + tuples[1][i][0] + "\"," + tuples[1][i][1] + "," + tuples[1][i][2] + ");";
+                var query = "INSERT INTO `" + fn + "` (Entity,Year,Share)" + " VALUES(\"" + tuples[1][i][0] + "\"," + tuples[1][i][1] + "," + tuples[1][i][2] + ");";
                 console.log(query);
                 connection.query(query, function (err, result) {
                     if (err) throw err;
@@ -201,7 +201,7 @@ router.post('/getDatasetKeys', (req, res) => {
     const { datasetName } = req.body;
 
     pool.getConnection(function (err, connection) {
-        var query = "SELECT Entity as entity,MAX(Year) as maxYear,MIN(Year) as minYear from " + datasetName + " GROUP BY Entity;";
+        var query = "SELECT Entity as entity,MAX(Year) as maxYear,MIN(Year) as minYear from `" + datasetName + "` GROUP BY Entity;";
 
         connection.query(query, function (err, rows) {
             if (err) throw err;
