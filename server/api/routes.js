@@ -66,8 +66,6 @@ router.post('/find', (req, res) => {
         " ORDER BY " + yearType + " ASC"
     var data = [];
 
-    console.log(query);
-
     pool.getConnection(function (err, connection) {
         connection.query(query, function (err, rows) {
             connection.release();
@@ -75,14 +73,12 @@ router.post('/find', (req, res) => {
 
             for (var i = 0; i < rows.length; i++) {
                 const row = rows[i];
-                console.log(row);
                 data.push({
                     xValue: row[yearType],
                     yValue: row[percentageType],
                 })
             }
 
-            console.log(data);
             res.send({ graphData: data });
         });
     });
@@ -98,8 +94,6 @@ router.post('/insert', (req, res) => {
 
     var query = "INSERT INTO " + table + " (" + locationType + "," + yearType + "," + percentageType + ")" +
         " VALUES(\"" + location + "\"," + year + "," + percentage + ");";
-
-    console.log(query);
 
     pool.getConnection(function (err, connection) {
         connection.query(query, function (err, result) {
@@ -121,8 +115,6 @@ router.post('/update', (req, res) => {
     var query = "UPDATE " + table + " SET " + percentageType + "=" + percentage + " WHERE " +
         locationType + "=\"" + location + "\" AND " + yearType + "=" + year + ";";
 
-    console.log(query);
-
     pool.getConnection(function (err, connection) {
         connection.query(query, function (err, result) {
             connection.release();
@@ -143,8 +135,6 @@ router.post('/delete', (req, res) => {
     var query = "DELETE FROM " + table + " WHERE " +
         locationType + "=\"" + location + "\" AND " + yearType + "=" + year + ";";
 
-    console.log(query);
-
     pool.getConnection(function (err, connection) {
         connection.query(query, function (err, result) {
             connection.release();
@@ -158,7 +148,6 @@ router.post('/uploadCSV', (req, res) => {
     const { data, fileName } = req.body;
 
     var tuples = helper.parseData(data);
-    console.log(tuples);
     var fn = fileName.substr(0, fileName.length - 4);
 
     if (tuples !== null) {
@@ -173,14 +162,18 @@ router.post('/uploadCSV', (req, res) => {
                 if (err) throw err;
             });
 
+            var tupleStr = "";
 
-            for (var i = 0; i < tuples[1].length; i++) {
-                var query = "INSERT INTO `" + fn + "` (Entity,Year,Share)" + " VALUES(\"" + tuples[1][i][0] + "\"," + tuples[1][i][1] + "," + tuples[1][i][2] + ");";
-                console.log(query);
-                connection.query(query, function (err, result) {
-                    if (err) throw err;
-                });
+            for (var i = 1; i < tuples.length - 1; i++) {
+                tupleStr += "(\"" + tuples[i][0] + "\"," + tuples[i][1] + "," + tuples[i][2] + "), ";
             }
+            tupleStr += "(\"" + tuples[tuples.length - 1][0] + "\"," + tuples[tuples.length - 1][1] + "," + tuples[tuples.length - 1][2] + ");";
+
+            var query = "INSERT INTO `" + fn + "` (Entity,Year,Share)" + " VALUES" + tupleStr;
+            connection.query(query, function (err, result) {
+                if (err) throw err;
+            });
+
             connection.release();
         });
     }
@@ -208,13 +201,13 @@ router.post('/getDatasetKeys', (req, res) => {
             connection.release();
 
             var entities = [];
-            var minYear = 1900;
-            var maxYear = 2020;
+            var minYear = 10000;
+            var maxYear = 0;
 
             for (var i = 0; i < rows.length; i++) {
                 entities.push(rows[i].entity);
-                minYear = Math.max(minYear, rows[i].minYear);
-                maxYear = Math.min(maxYear, rows[i].maxYear);
+                minYear = Math.max(1900, Math.min(minYear, rows[i].minYear));
+                maxYear = Math.min(2020, Math.max(maxYear, rows[i].maxYear));
             }
 
             res.send({
@@ -227,5 +220,31 @@ router.post('/getDatasetKeys', (req, res) => {
 
 });
 
+router.post('/findDatasetData', (req, res) => {
+    const { datasetName, minYear, maxYear, country } = req.body;
+
+    pool.getConnection(function (err, connection) {
+        var query = "SELECT DISTINCT * FROM `" + datasetName + "` WHERE Year >= " + minYear + " AND Year <= " + maxYear + " AND Entity = \"" + country + "\"" +
+            " ORDER BY Year ASC";
+
+        connection.query(query, function (err, rows) {
+            connection.release();
+            if (err) throw err;
+
+            var data = [];
+
+            for (var i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                data.push({
+                    xValue: row["Year"],
+                    yValue: row["Share"],
+                })
+            }
+
+            res.send({ graphData: data });
+        });
+    });
+
+});
 
 module.exports = router;

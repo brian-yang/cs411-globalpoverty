@@ -59,7 +59,7 @@ function parseData(data) {
         tuples.push(tuple);
     }
 
-    return [headers, tuples];
+    return tuples;
 }
 
 module.exports = { parseData };
