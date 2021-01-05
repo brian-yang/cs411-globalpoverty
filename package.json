@@ -22,7 +22,7 @@
     "dependencies": {
         "@material-ui/core": "^4.9.9",
         "apoc": "^2.1.6",
-        "axios": "^0.19.2",
+        "axios": "^0.21.1",
         "express": "^4.17.1",
         "extend": "^3.0.2",
         "mysql": "^2.18.1",
